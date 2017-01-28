@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 =begin
-	Ž­“‡ƒAƒ“ƒgƒ‰[ƒY‚ÌŽŽ‡—\’èƒy[ƒW‚ðƒXƒNƒŒƒCƒsƒ“ƒO‚µCGoogle Calendar—p‚ÌCSVƒtƒ@ƒCƒ‹‚Éo—Í‚·‚é
-	ŽQlURL: http://www.engineyard.co.jp/blog/2012/getting-started-with-nokogiri/
+	é¹¿å³¶ã‚¢ãƒ³ãƒˆãƒ©ãƒ¼ã‚ºã®è©¦åˆäºˆå®šãƒšãƒ¼ã‚¸ã‚’ã‚¹ã‚¯ãƒ¬ã‚¤ãƒ”ãƒ³ã‚°ã—ï¼ŒGoogle Calendarç”¨ã®CSVãƒ•ã‚¡ã‚¤ãƒ«ã«å‡ºåŠ›ã™ã‚‹
+	å‚è€ƒURL: http://www.engineyard.co.jp/blog/2012/getting-started-with-nokogiri/
 =end
 require "date"
 require "csv"
@@ -9,22 +9,19 @@ require "nokogiri"
 require "open-uri"
 
 class GetAntlersGames
-	# ƒXƒNƒŒƒCƒsƒ“ƒO‚·‚éURL
+	# ã‚¹ã‚¯ãƒ¬ã‚¤ãƒ”ãƒ³ã‚°ã™ã‚‹URL
 	URL = "http://www.so-net.ne.jp/antlers/games/"
 
-	# ƒRƒ“ƒXƒgƒ‰ƒNƒ^
-	def initialize(leagueNum = 34, cupNum = 7)
-		# ƒŠ[ƒOí‚ÌŽŽ‡”
-		@leagueNum = leagueNum
+	# ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+	def initialize(leagueNum = 34, aclNum = 6)
+		# ãƒªãƒ¼ã‚°æˆ¦ã®è©¦åˆæ•°
+		@leagueNum  = leagueNum
 
-		# ƒŠ[ƒOíŠeƒXƒe[ƒW‚ÌŽŽ‡”
-		@stageNum = @leagueNum / 2
-
-		# ACL/ƒiƒrƒXƒRƒOƒ‹[ƒvƒXƒe[ƒW‚ÌŽŽ‡”
-		@cupNum = cupNum
+		# ACLäºˆé¸ãƒªãƒ¼ã‚°ã®è©¦åˆæ•°
+		@aclNum = aclNum
 	end
 
-	# Nokogiri‚Åhtml‚ðŽæ“¾‚·‚é
+	# Nokogiriã§htmlã‚’å–å¾—ã™ã‚‹
 	def get_html
 		charset = nil
 		html = open(URL) do |f|
@@ -34,26 +31,29 @@ class GetAntlersGames
 		@doc = Nokogiri::HTML.parse(html, nil, charset)
 	end
 
-	# xpath‚ÅŽæ“¾‚µ‚½html‚ðƒp[ƒX‚·‚é
+	# xpathã§å–å¾—ã—ãŸhtmlã‚’ãƒ‘ãƒ¼ã‚¹ã™ã‚‹
 	def scraping
-		@data = []  # ŽŽ‡—\’è‚ªŠi”[‚³‚ê‚é2ŽŸŒ³”z—ñ
-		tmp   = []  # ƒ[ƒN1ŽŸŒ³”z—ñ
-		row   = 1   # ƒJƒEƒ“ƒ^
-		gameNum = 1 # Œ»Ý“Ç‚Ýž‚ñ‚Å‚¢‚éŽŽ‡‚Ì’Ê‚µ”Ô†
+		@data = []  # è©¦åˆäºˆå®šãŒæ ¼ç´ã•ã‚Œã‚‹2æ¬¡å…ƒé…åˆ—
+		tmp   = []  # ãƒ¯ãƒ¼ã‚¯1æ¬¡å…ƒé…åˆ—
+		row   = 1   # ã‚«ã‚¦ãƒ³ã‚¿
+		gameNum = 1 # ç¾åœ¨èª­ã¿è¾¼ã‚“ã§ã„ã‚‹è©¦åˆã®é€šã—ç•ªå·
 
 		@doc.xpath('//div[@class = "result_table"]//td').each do |node|
-			# •¶Žš—ñ‰»‚µ‚Ä‹ó”’‚ðœ‹Ž‚·‚é
+			# æ–‡å­—åˆ—åŒ–ã—ã¦ç©ºç™½ã‚’é™¤åŽ»ã™ã‚‹
 			str = node.text.strip
 
-			# ŠeŽŽ‡‚ÌßC“ú’öCŽžŠÔ‚È‚Ç‚ð”z—ñ‚Æ‚µ‚Ätmp‚ÉŠi”[‚·‚é
+			# ACL GLã®è©¦åˆã¾ã§èª­ã¿è¾¼ã‚“ã ã‚‰å‡¦ç†ã‚’çµ‚äº†ã™ã‚‹
+			break if gameNum > (@leagueNum + @aclNum)
+
+			# å„è©¦åˆã®ç¯€ï¼Œæ—¥ç¨‹ï¼Œæ™‚é–“ãªã©ã‚’é…åˆ—ã¨ã—ã¦tmpã«æ ¼ç´ã™ã‚‹
 			if row < 7
 				tmp << str
 				row += 1
-			# tmp(ŠeŽŽ‡‚Ìî•ñ)‚ðdata‚ÉƒRƒs[‚·‚é
+			# tmp(å„è©¦åˆã®æƒ…å ±)ã‚’dataã«ã‚³ãƒ”ãƒ¼ã™ã‚‹
 			else
 				@data << tmp
 
-				# tmp‚ð‰Šú‰»‚·‚é
+				# tmpã‚’åˆæœŸåŒ–ã™ã‚‹
 				tmp = []
 
 				row = 1
@@ -63,36 +63,33 @@ class GetAntlersGames
 		end
 	end
 
-	# Google CalendarŒ`Ž®‚É•ÏŠ·‚·‚é
+	# Google Calendarå½¢å¼ã«å¤‰æ›ã™ã‚‹
 	def convert_gcal
-		@result = []  # gcal•ÏŠ·Œã
+		@result = []  # gcalå¤‰æ›å¾Œ
 
 		@data.each_with_index do |line, row|
-			# Œ–¼‚Ì¶¬
+			# ä»¶åã®ç”Ÿæˆ
 			matchNum = line[0].insert(0, "\#")
-			matchNum.delete!("‘æ")
-			matchNum.delete!("ß")
-			matchNum.delete!("í")
+			matchNum.delete!("ç¬¬")
+			matchNum.delete!("ç¯€")
 
 			teamName = line[5]
 
-			if row + 1 <= @stageNum
-				title = "J1-1" + matchNum + " " + teamName
-			elsif row + 1 <= @leagueNum
-				title = "J1-2" + matchNum + " " + teamName
-			elsif row + 1 <= @leagueNum + @cupNum
-				title = "NC GL" + matchNum + " " + teamName
+			if row + 1 <= @leagueNum
+				title = "J1" + matchNum + " " + teamName
 			else
-				title = matchNum.delete!("\#") + " " + teamName
+				title = "ACL" + matchNum + " " + teamName
 			end
 
-			# “ú•t‚ÌÝ’è
-			dt = Date.today
-			day = line[1].slice(0, line[1].index("("))
-			day.insert(0, dt.strftime("%Y/"))
+			# æ—¥ä»˜ã®è¨­å®š
+			if line[1] != "æœªå®š"
+				dt = Date.today
+				day = line[1].slice(0, line[1].index("("))
+				day.insert(0, dt.strftime("%Y/"))
+			end
 
-			# ŠJŽnEI—¹ŽžŠÔ‚ÌÝ’è
-			if line[2] == "–¢’è"
+			# é–‹å§‹ãƒ»çµ‚äº†æ™‚é–“ã®è¨­å®š
+			if line[2] == "æœªå®š"
 				sTime = ""
 				eTime = ""
 				allDayFlag = "TRUE"
@@ -108,17 +105,17 @@ class GetAntlersGames
 				allDayFlag = ""
 			end
 
-			# ƒXƒ^ƒWƒAƒ€–¼‚ÌÝ’è
+			# ã‚¹ã‚¿ã‚¸ã‚¢ãƒ åã®è¨­å®š
 			stadium = line[3]
 
 			@result << [title, day, sTime, day, eTime, allDayFlag, stadium]
 		end
 	end
 
-	# CSVƒtƒ@ƒCƒ‹‚Éo—Í‚·‚é
+	# CSVãƒ•ã‚¡ã‚¤ãƒ«ã«å‡ºåŠ›ã™ã‚‹
 	def output_csv(file_name)
 		CSV.open(file_name, "w", :encoding => "SJIS") do |csv|
-			csv << ["Œ–¼", "ŠJŽn“ú" , "ŠJŽnŽž", "I—¹“ú", "I—¹Žž", "I“úƒCƒxƒ“ƒg", "êŠ"]
+			csv << ["ä»¶å", "é–‹å§‹æ—¥" , "é–‹å§‹æ™‚åˆ»", "çµ‚äº†æ—¥", "çµ‚äº†æ™‚åˆ»", "çµ‚æ—¥ã‚¤ãƒ™ãƒ³ãƒˆ", "å ´æ‰€"]
 
 			@result.each do |line|
 				csv << line
@@ -132,4 +129,4 @@ antlers = GetAntlersGames.new
 antlers.get_html
 antlers.scraping
 antlers.convert_gcal
-antlers.output_csv("Ž­“‡“ú’ö.csv")
+antlers.output_csv("é¹¿å³¶æ—¥ç¨‹.csv")
